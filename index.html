@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platten-Gewichtsrechner</title>
+    <title>Plate Weight Calculator</title>
     <style>
-        /* Design inspired by www.koch.ch: Clean, modern, white background, blue accents, sans-serif fonts */
+        /* Design inspired by www.koch.ch: Clean, modern, white background, red accents, sans-serif fonts */
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: #ffffff;
@@ -14,7 +14,7 @@
             padding: 0;
         }
         header {
-            background-color: #004a8f; /* Primary blue */
+            background-color: #d32f2f; /* Primary red accent */
             color: #ffffff;
             padding: 20px;
             text-align: center;
@@ -25,9 +25,14 @@
             font-size: 2em;
         }
         .language-switcher {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+            text-align: center;
+            background-color: #d32f2f;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
         }
         .language-switcher button {
             background: none;
@@ -35,7 +40,7 @@
             color: #ffffff;
             cursor: pointer;
             font-size: 1em;
-            margin-left: 10px;
+            margin: 0 10px;
         }
         .language-switcher button.active {
             font-weight: bold;
@@ -43,7 +48,7 @@
         }
         main {
             max-width: 800px;
-            margin: 40px auto;
+            margin: 60px auto 40px; /* Adjusted for fixed language bar */
             padding: 20px;
             background-color: #f8f8f8;
             border: 1px solid #dddddd;
@@ -65,7 +70,7 @@
             border-radius: 3px;
         }
         button {
-            background-color: #004a8f;
+            background-color: #d32f2f;
             color: #ffffff;
             padding: 10px 20px;
             border: none;
@@ -74,7 +79,7 @@
             font-size: 1em;
         }
         button:hover {
-            background-color: #003366;
+            background-color: #b71c1c;
         }
         #result {
             margin-top: 20px;
@@ -93,24 +98,25 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Platten-Gewichtsrechner</h1>
-        <div class="language-switcher">
-            <button onclick="changeLanguage('de')" class="active">DE</button>
-            <button onclick="changeLanguage('fr')">FR</button>
-            <button onclick="changeLanguage('en')">EN</button>
-        </div>
+    <div class="language-switcher">
+        <button onclick="changeLanguage('de')">DE</button>
+        <button onclick="changeLanguage('fr')">FR</button>
+        <button onclick="changeLanguage('en')" class="active">EN</button>
+        <button onclick="changeLanguage('it')">IT</button>
+    </div>
+    <header style="margin-top: 40px;"> <!-- Adjusted for language bar -->
+        <h1>Plate Weight Calculator</h1>
     </header>
     <main>
         <section>
-            <p>Willkommen beim Platten-Gewichtsrechner für Schreiner. Berechnen Sie das Gewicht von Platten basierend auf Material, Dicke, Länge und Breite. Nur europäische Einheiten: mm für Maße, kg für Gewicht.</p>
+            <p>Welcome to the Plate Weight Calculator for carpenters. Calculate the weight of plates based on material, thickness, length, and width. European units only: mm for dimensions, kg for weight.</p>
         </section>
         <section>
-            <label for="category">Kategorie:</label>
+            <label for="category">Category:</label>
             <select id="category" onchange="updateMaterials()">
-                <option value="woods">Hölzer</option>
-                <option value="metals">Metalle</option>
-                <option value="glasses">Gläser</option>
+                <option value="woods">Woods</option>
+                <option value="metals">Metals</option>
+                <option value="glasses">Glasses</option>
             </select>
         </section>
         <section>
@@ -120,22 +126,22 @@
             </select>
         </section>
         <section>
-            <label for="thickness">Dicke (mm):</label>
+            <label for="thickness">Thickness (mm):</label>
             <input type="number" id="thickness" min="0" step="0.1" required>
         </section>
         <section>
-            <label for="length">Länge (mm):</label>
+            <label for="length">Length (mm):</label>
             <input type="number" id="length" min="0" step="0.1" required>
         </section>
         <section>
-            <label for="width">Breite (mm):</label>
+            <label for="width">Width (mm):</label>
             <input type="number" id="width" min="0" step="0.1" required>
         </section>
-        <button onclick="calculateWeight()">Berechnen</button>
+        <button onclick="calculateWeight()">Calculate</button>
         <div id="result"></div>
     </main>
     <footer>
-        &copy; 2025 Platten-Gewichtsrechner. Inspiriert von koch.ch.
+        &copy; 2025 Plate Weight Calculator. Inspired by koch.ch.
     </footer>
 
     <script>
@@ -210,11 +216,26 @@
                 metals: 'Metals',
                 glasses: 'Glasses',
                 footer: '&copy; 2025 Plate Weight Calculator. Inspired by koch.ch.'
+            },
+            it: {
+                title: 'Calcolatore del Peso delle Lastre',
+                welcome: 'Benvenuti nel Calcolatore del Peso delle Lastre per falegnami. Calcola il peso delle lastre in base al materiale, spessore, lunghezza e larghezza. Solo unità europee: mm per le dimensioni, kg per il peso.',
+                category: 'Categoria:',
+                material: 'Materiale:',
+                thickness: 'Spessore (mm):',
+                length: 'Lunghezza (mm):',
+                width: 'Larghezza (mm):',
+                calculate: 'Calcola',
+                result: 'Peso: {weight} kg',
+                woods: 'Legni',
+                metals: 'Metalli',
+                glasses: 'Vetri',
+                footer: '&copy; 2025 Calcolatore del Peso delle Lastre. Ispirato da koch.ch.'
             }
         };
 
         // Current language
-        let currentLang = 'de';
+        let currentLang = 'en';
 
         function updateMaterials() {
             const category = document.getElementById('category').value;
@@ -230,14 +251,14 @@
 
         function calculateWeight() {
             const density = parseFloat(document.getElementById('material').value);
-            const thickness = parseFloat(document.getElementById('thickness').value) / 1000000; // mm to m³
-            const length = parseFloat(document.getElementById('length').value) / 1000000;
-            const width = parseFloat(document.getElementById('width').value) / 1000000;
+            const thickness = parseFloat(document.getElementById('thickness').value);
+            const length = parseFloat(document.getElementById('length').value);
+            const width = parseFloat(document.getElementById('width').value);
             if (isNaN(density) || isNaN(thickness) || isNaN(length) || isNaN(width)) {
-                alert('Bitte alle Felder ausfüllen.');
+                alert('Please fill all fields.');
                 return;
             }
-            const volume = thickness * length * width * 1000000; // Correct volume in m³
+            const volume = (thickness * length * width) / 1000000000; // mm³ to m³ (1e9)
             const weight = density * volume;
             document.getElementById('result').textContent = translations[currentLang].result.replace('{weight}', weight.toFixed(2));
         }
@@ -265,17 +286,18 @@
             // Update language buttons
             document.querySelectorAll('.language-switcher button').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.toLowerCase() === lang) {
+                if (btn.onclick.toString().includes(`'${lang}'`)) {
                     btn.classList.add('active');
                 }
             });
 
-            // Re-populate materials with possibly translated names, but since materials have bilingual names, keep as is
+            // Re-populate materials
             updateMaterials();
         }
 
         // Initial setup
         updateMaterials();
+        changeLanguage('en');
     </script>
 </body>
 </html>
