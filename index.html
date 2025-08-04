@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plate Weight Calculator</title>
+    <title>Panel Weight Calculator</title>
     <style>
         /* Design inspired by www.koch.ch: Clean, modern, white background, red accents, sans-serif fonts */
         body {
@@ -105,11 +105,18 @@
         <button onclick="changeLanguage('it')">IT</button>
     </div>
     <header style="margin-top: 40px;"> <!-- Adjusted for language bar -->
-        <h1>Plate Weight Calculator</h1>
+        <h1>Panel Weight Calculator</h1>
     </header>
     <main>
         <section>
-            <p>Welcome to the Plate Weight Calculator for carpenters. Calculate the weight of plates based on material, thickness, length, and width. European units only: mm for dimensions, kg for weight.</p>
+            <p>Welcome to the Panel Weight Calculator for carpenters. Calculate the weight of panels based on material, thickness, length, and width. Metric units (mm, kg) by default; imperial (inches, lbs) available.</p>
+        </section>
+        <section id="units-section" style="display: block;">
+            <label for="units">Units:</label>
+            <select id="units" onchange="updateUnits()">
+                <option value="metric">Metric (mm, kg)</option>
+                <option value="imperial">Imperial (inches, lbs)</option>
+            </select>
         </section>
         <section>
             <label for="category">Category:</label>
@@ -141,42 +148,43 @@
         <div id="result"></div>
     </main>
     <footer>
-        &copy; 2025 Plate Weight Calculator. Inspired by koch.ch.
+        &copy; 2025 Panel Weight Calculator. Information without warranty, any liability is excluded.
     </footer>
 
     <script>
-        // Material densities in kg/m³ (averaged from common sources)
-        const materials = {
-            woods: {
-                'Buche (Beech)': 700,
-                'Eiche (Oak)': 750,
-                'Fichte (Spruce)': 450,
-                'Kiefer (Pine)': 500,
-                'Esche (Ash)': 700,
-                'Ahorn (Maple)': 705,
-                'Erle (Alder)': 500,
-                'MDF': 750,
-                'Spanplatte (Particleboard)': 700
-            },
-            metals: {
-                'Aluminium': 2705,
-                'Stahl (Steel)': 7850,
-                'Kupfer (Copper)': 8944,
-                'Messing (Brass)': 8587,
-                'Zink (Zinc)': 7140
-            },
-            glasses: {
-                'Floatglas (Float Glass)': 2500,
-                'Gehärtetes Glas (Tempered Glass)': 2500,
-                'Verbundglas (Laminated Glass)': 2530
-            }
+        // Material data with IDs and densities
+        const materialData = {
+            woods: [
+                {id: 'beech', density: 700},
+                {id: 'oak', density: 750},
+                {id: 'spruce', density: 450},
+                {id: 'pine', density: 500},
+                {id: 'ash', density: 700},
+                {id: 'maple', density: 705},
+                {id: 'alder', density: 500},
+                {id: 'mdf', density: 750},
+                {id: 'particleboard', density: 700},
+                {id: 'corian', density: 1780}
+            ],
+            metals: [
+                {id: 'aluminium', density: 2705},
+                {id: 'steel', density: 7850},
+                {id: 'copper', density: 8944},
+                {id: 'brass', density: 8587},
+                {id: 'zinc', density: 7140}
+            ],
+            glasses: [
+                {id: 'float_glass', density: 2500},
+                {id: 'tempered_glass', density: 2500},
+                {id: 'laminated_glass', density: 2530}
+            ]
         };
 
         // Translations
         const translations = {
             de: {
                 title: 'Platten-Gewichtsrechner',
-                welcome: 'Willkommen beim Platten-Gewichtsrechner für Schreiner. Berechnen Sie das Gewicht von Platten basierend auf Material, Dicke, Länge und Breite. Nur europäische Einheiten: mm für Maße, kg für Gewicht.',
+                welcome: 'Willkommen beim Platten-Gewichtsrechner für Schreiner. Berechnen Sie das Gewicht von Platten basierend auf Material, Dicke, Länge und Breite. Nur metrische Einheiten: mm für Maße, kg für Gewicht.',
                 category: 'Kategorie:',
                 material: 'Material:',
                 thickness: 'Dicke (mm):',
@@ -187,11 +195,31 @@
                 woods: 'Hölzer',
                 metals: 'Metalle',
                 glasses: 'Gläser',
-                footer: '&copy; 2025 Platten-Gewichtsrechner. Inspiriert von koch.ch.'
+                footer: '&copy; 2025 Platten-Gewichtsrechner. Angaben ohne Gewähr, jegliche Haftung wird ausgeschlossen.',
+                error: 'Bitte alle Felder ausfüllen.',
+                // Material translations
+                beech: 'Buche',
+                oak: 'Eiche',
+                spruce: 'Fichte',
+                pine: 'Kiefer',
+                ash: 'Esche',
+                maple: 'Ahorn',
+                alder: 'Erle',
+                mdf: 'MDF',
+                particleboard: 'Spanplatte',
+                corian: 'Corian',
+                aluminium: 'Aluminium',
+                steel: 'Stahl',
+                copper: 'Kupfer',
+                brass: 'Messing',
+                zinc: 'Zink',
+                float_glass: 'Floatglas',
+                tempered_glass: 'Gehärtetes Glas',
+                laminated_glass: 'Verbundglas'
             },
             fr: {
                 title: 'Calculateur de poids de plaques',
-                welcome: 'Bienvenue sur le calculateur de poids de plaques pour menuisiers. Calculez le poids des plaques en fonction du matériau, de l\'épaisseur, de la longueur et de la largeur. Unités européennes uniquement : mm pour les mesures, kg pour le poids.',
+                welcome: 'Bienvenue sur le calculateur de poids de plaques pour menuisiers. Calculez le poids des plaques en fonction du matériau, de l\'épaisseur, de la longueur et de la largeur. Unités métriques uniquement : mm pour les mesures, kg pour le poids.',
                 category: 'Catégorie :',
                 material: 'Matériau :',
                 thickness: 'Épaisseur (mm) :',
@@ -202,26 +230,67 @@
                 woods: 'Bois',
                 metals: 'Métaux',
                 glasses: 'Verres',
-                footer: '&copy; 2025 Calculateur de poids de plaques. Inspiré par koch.ch.'
+                footer: '&copy; 2025 Calculateur de poids de plaques. Informations sans garantie, toute responsabilité est exclue.',
+                error: 'Veuillez remplir tous les champs.',
+                // Material translations
+                beech: 'Hêtre',
+                oak: 'Chêne',
+                spruce: 'Épicéa',
+                pine: 'Pin',
+                ash: 'Frêne',
+                maple: 'Érable',
+                alder: 'Aulne',
+                mdf: 'MDF',
+                particleboard: 'Panneau de particules',
+                corian: 'Corian',
+                aluminium: 'Aluminium',
+                steel: 'Acier',
+                copper: 'Cuivre',
+                brass: 'Laiton',
+                zinc: 'Zinc',
+                float_glass: 'Verre float',
+                tempered_glass: 'Verre trempé',
+                laminated_glass: 'Verre feuilleté'
             },
             en: {
-                title: 'Plate Weight Calculator',
-                welcome: 'Welcome to the Plate Weight Calculator for carpenters. Calculate the weight of plates based on material, thickness, length, and width. European units only: mm for dimensions, kg for weight.',
+                title: 'Panel Weight Calculator',
+                welcome: 'Welcome to the Panel Weight Calculator for carpenters. Calculate the weight of panels based on material, thickness, length, and width. Metric units (mm, kg) by default; imperial (inches, lbs) available.',
                 category: 'Category:',
                 material: 'Material:',
                 thickness: 'Thickness (mm):',
                 length: 'Length (mm):',
                 width: 'Width (mm):',
                 calculate: 'Calculate',
-                result: 'Weight: {weight} kg',
+                result: 'Weight: {weight} {unit}',
                 woods: 'Woods',
                 metals: 'Metals',
                 glasses: 'Glasses',
-                footer: '&copy; 2025 Plate Weight Calculator. Inspired by koch.ch.'
+                footer: '&copy; 2025 Panel Weight Calculator. Information without warranty, any liability is excluded.',
+                error: 'Please fill all fields.',
+                units: 'Units:',
+                // Material translations
+                beech: 'Beech',
+                oak: 'Oak',
+                spruce: 'Spruce',
+                pine: 'Pine',
+                ash: 'Ash',
+                maple: 'Maple',
+                alder: 'Alder',
+                mdf: 'MDF',
+                particleboard: 'Particleboard',
+                corian: 'Corian',
+                aluminium: 'Aluminium',
+                steel: 'Steel',
+                copper: 'Copper',
+                brass: 'Brass',
+                zinc: 'Zinc',
+                float_glass: 'Float Glass',
+                tempered_glass: 'Tempered Glass',
+                laminated_glass: 'Laminated Glass'
             },
             it: {
-                title: 'Calcolatore del Peso delle Lastre',
-                welcome: 'Benvenuti nel Calcolatore del Peso delle Lastre per falegnami. Calcola il peso delle lastre in base al materiale, spessore, lunghezza e larghezza. Solo unità europee: mm per le dimensioni, kg per il peso.',
+                title: 'Calcolatore del Peso dei Pannelli',
+                welcome: 'Benvenuti nel Calcolatore del Peso dei Pannelli per falegnami. Calcola il peso dei pannelli in base al materiale, spessore, lunghezza e larghezza. Solo unità metriche: mm per le dimensioni, kg per il peso.',
                 category: 'Categoria:',
                 material: 'Materiale:',
                 thickness: 'Spessore (mm):',
@@ -232,23 +301,53 @@
                 woods: 'Legni',
                 metals: 'Metalli',
                 glasses: 'Vetri',
-                footer: '&copy; 2025 Calcolatore del Peso delle Lastre. Ispirato da koch.ch.'
+                footer: '&copy; 2025 Calcolatore del Peso dei Pannelli. Informazioni senza garanzia, qualsiasi responsabilità è esclusa.',
+                error: 'Si prega di compilare tutti i campi.',
+                // Material translations
+                beech: 'Faggio',
+                oak: 'Quercia',
+                spruce: 'Abete',
+                pine: 'Pino',
+                ash: 'Frassino',
+                maple: 'Acero',
+                alder: 'Ontano',
+                mdf: 'MDF',
+                particleboard: 'Truciolare',
+                corian: 'Corian',
+                aluminium: 'Alluminio',
+                steel: 'Acciaio',
+                copper: 'Rame',
+                brass: 'Ottone',
+                zinc: 'Zinco',
+                float_glass: 'Vetro float',
+                tempered_glass: 'Vetro temperato',
+                laminated_glass: 'Vetro laminato'
             }
         };
 
-        // Current language
+        // Current language and units
         let currentLang = 'en';
+        let currentUnits = 'metric';
 
         function updateMaterials() {
             const category = document.getElementById('category').value;
             const materialSelect = document.getElementById('material');
             materialSelect.innerHTML = '';
-            for (let mat in materials[category]) {
+            materialData[category].forEach(mat => {
                 const option = document.createElement('option');
-                option.value = materials[category][mat];
-                option.textContent = mat;
+                option.value = mat.density;
+                option.textContent = translations[currentLang][mat.id];
+                option.dataset.id = mat.id; // Store id for reference if needed
                 materialSelect.appendChild(option);
-            }
+            });
+        }
+
+        function updateUnits() {
+            currentUnits = document.getElementById('units').value;
+            const dimUnit = currentUnits === 'metric' ? '(mm)' : '(inches)';
+            document.querySelector('label[for="thickness"]').textContent = translations['en'].thickness.replace('(mm)', dimUnit);
+            document.querySelector('label[for="length"]').textContent = translations['en'].length.replace('(mm)', dimUnit);
+            document.querySelector('label[for="width"]').textContent = translations['en'].width.replace('(mm)', dimUnit);
         }
 
         function calculateWeight() {
@@ -257,12 +356,24 @@
             const length = parseFloat(document.getElementById('length').value);
             const width = parseFloat(document.getElementById('width').value);
             if (isNaN(density) || isNaN(thickness) || isNaN(length) || isNaN(width)) {
-                alert('Please fill all fields.');
+                alert(translations[currentLang].error);
                 return;
             }
-            const volume = (thickness * length * width) / 1000000000; // mm³ to m³ (1e9)
-            const weight = density * volume;
-            document.getElementById('result').textContent = translations[currentLang].result.replace('{weight}', weight.toFixed(2));
+            let volume;
+            if (currentLang !== 'en' || currentUnits === 'metric') {
+                volume = (thickness * length * width) / 1000000000; // mm³ to m³
+            } else { // imperial
+                const inchToMeter = 0.0254;
+                volume = (thickness * length * width) * (inchToMeter ** 3); // inches³ to m³
+            }
+            let weight = density * volume;
+            let weightUnit = 'kg';
+            if (currentLang === 'en' && currentUnits === 'imperial') {
+                weight *= 2.20462262185; // kg to lbs
+                weightUnit = 'lbs';
+            }
+            const resultText = translations[currentLang].result.replace('{weight}', weight.toFixed(2)).replace('{unit}', weightUnit);
+            document.getElementById('result').textContent = resultText;
         }
 
         function changeLanguage(lang) {
@@ -284,6 +395,19 @@
             categorySelect.options[0].text = translations[lang].woods;
             categorySelect.options[1].text = translations[lang].metals;
             categorySelect.options[2].text = translations[lang].glasses;
+
+            // Show/hide units section
+            const unitsSection = document.getElementById('units-section');
+            if (lang === 'en') {
+                unitsSection.style.display = 'block';
+                updateUnits(); // Update labels based on current units
+            } else {
+                unitsSection.style.display = 'none';
+                // Reset to metric labels
+                document.querySelector('label[for="thickness"]').textContent = translations[lang].thickness;
+                document.querySelector('label[for="length"]').textContent = translations[lang].length;
+                document.querySelector('label[for="width"]').textContent = translations[lang].width;
+            }
 
             // Update language buttons
             document.querySelectorAll('.language-switcher button').forEach(btn => {
