@@ -162,7 +162,7 @@
     </footer>
 
     <script>
-        // Material data with IDs and densities
+        // Material data with IDs and densities in kg/m³
         const materialData = {
             woods: [
                 {id: 'beech', density: 700},
@@ -363,9 +363,14 @@
             }
         };
 
+        // Constants for unit conversions
+        const METRIC_TO_IMPERIAL_DENSITY = 0.06242796; // kg/m³ to lb/ft³
+        const IMPERIAL_TO_METRIC_DENSITY = 1 / METRIC_TO_IMPERIAL_DENSITY;
+
         // Current language and units
         let currentLang = 'en';
         let currentUnits = 'metric';
+        let previousUnits = 'metric';
 
         function updateMaterials() {
             const category = document.getElementById('category').value;
@@ -373,7 +378,7 @@
             materialSelect.innerHTML = '';
             materialData[category].forEach(mat => {
                 const option = document.createElement('option');
-                option.value = mat.density;
+                option.value = mat.density; // Always kg/m³
                 option.textContent = translations[currentLang][mat.id];
                 option.dataset.id = mat.id;
                 option.dataset.density = mat.density;
@@ -386,16 +391,40 @@
             const materialSelect = document.getElementById('material');
             const selectedOption = materialSelect.options[materialSelect.selectedIndex];
             if (selectedOption) {
-                document.getElementById('density').value = selectedOption.dataset.density;
+                const densityKgM3 = parseFloat(selectedOption.dataset.density);
+                let displayDensity = densityKgM3;
+                if (currentLang === 'en' && currentUnits === 'imperial') {
+                    displayDensity = densityKgM3 * METRIC_TO_IMPERIAL_DENSITY;
+                }
+                document.getElementById('density').value = displayDensity.toFixed(2);
             }
         }
 
         function updateUnits() {
-            currentUnits = document.getElementById('units').value;
+            const newUnits = document.getElementById('units').value;
+            const previous = previousUnits;
+            previousUnits = newUnits;
+            currentUnits = newUnits;
+
+            // Update dimension labels
             const dimUnit = currentUnits === 'metric' ? '(mm)' : '(inches)';
-            document.querySelector('label[for="thickness"]').textContent = translations['en'].thickness.replace('(mm)', dimUnit);
-            document.querySelector('label[for="length"]').textContent = translations['en'].length.replace('(mm)', dimUnit);
-            document.querySelector('label[for="width"]').textContent = translations['en'].width.replace('(mm)', dimUnit);
+            document.querySelector('label[for="thickness"]').textContent = translations[currentLang].thickness.replace('(mm)', dimUnit);
+            document.querySelector('label[for="length"]').textContent = translations[currentLang].length.replace('(mm)', dimUnit);
+            document.querySelector('label[for="width"]').textContent = translations[currentLang].width.replace('(mm)', dimUnit);
+
+            // Update density label and value
+            const densityInput = document.getElementById('density');
+            let currentDensity = parseFloat(densityInput.value);
+            if (!isNaN(currentDensity)) {
+                if (previous === 'metric' && currentUnits === 'imperial') {
+                    currentDensity *= METRIC_TO_IMPERIAL_DENSITY;
+                } else if (previous === 'imperial' && currentUnits === 'metric') {
+                    currentDensity *= IMPERIAL_TO_METRIC_DENSITY;
+                }
+                densityInput.value = currentDensity.toFixed(2);
+            }
+            const densityUnit = currentUnits === 'metric' ? 'kg/m³' : 'lb/ft³';
+            document.querySelector('label[for="density"]').textContent = translations[currentLang].density.replace('(kg/m³)', `(${densityUnit})`);
         }
 
         function calculateWeight() {
@@ -407,18 +436,20 @@
                 alert(translations[currentLang].error);
                 return;
             }
-            let volume;
-            if (currentLang !== 'en' || currentUnits === 'metric') {
-                volume = (thickness * length * width) / 1000000000; // mm³ to m³
-            } else { // imperial
-                const inchToMeter = 0.0254;
-                volume = (thickness * length * width) * (inchToMeter ** 3); // inches³ to m³
-            }
-            let weight = density * volume;
-            let weightUnit = 'kg';
+            let weight;
+            let weightUnit;
             if (currentLang === 'en' && currentUnits === 'imperial') {
-                weight *= 2.20462262185; // kg to lbs
+                // Density in lb/ft³, dimensions in inches
+                const volume_inches3 = thickness * length * width;
+                const volume_ft3 = volume_inches3 / 1728;
+                weight = density * volume_ft3;
                 weightUnit = 'lbs';
+            } else {
+                // Density in kg/m³, dimensions in mm
+                const volume_mm3 = thickness * length * width;
+                const volume_m3 = volume_mm3 / 1000000000;
+                weight = density * volume_m3;
+                weightUnit = 'kg';
             }
             const resultText = translations[currentLang].result.replace('{weight}', weight.toFixed(2)).replace('{unit}', weightUnit);
             document.getElementById('result').textContent = resultText;
@@ -447,17 +478,19 @@
             categorySelect.options[1].text = translations[lang].metals;
             categorySelect.options[2].text = translations[lang].glasses;
 
-            // Show/hide units section
+            // Show/hide units section and reset units if not English
             const unitsSection = document.getElementById('units-section');
             if (lang === 'en') {
                 unitsSection.style.display = 'block';
-                updateUnits(); // Update labels based on current units
             } else {
                 unitsSection.style.display = 'none';
-                // Reset to metric labels
+                currentUnits = 'metric';
+                previousUnits = 'metric';
+                // Reset labels to metric
                 document.querySelector('label[for="thickness"]').textContent = translations[lang].thickness;
                 document.querySelector('label[for="length"]').textContent = translations[lang].length;
                 document.querySelector('label[for="width"]').textContent = translations[lang].width;
+                document.querySelector('label[for="density"]').textContent = translations[lang].density;
             }
 
             // Update language buttons
@@ -470,6 +503,9 @@
 
             // Re-populate materials
             updateMaterials();
+            if (lang === 'en') {
+                updateUnits();
+            }
         }
 
         // Initial setup
