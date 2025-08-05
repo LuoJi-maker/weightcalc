@@ -86,6 +86,11 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+        #disclaimer {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666666;
+        }
         footer {
             text-align: center;
             padding: 10px;
@@ -128,9 +133,13 @@
         </section>
         <section>
             <label for="material">Material:</label>
-            <select id="material">
+            <select id="material" onchange="updateDensity()">
                 <!-- Options will be populated by JS -->
             </select>
+        </section>
+        <section>
+            <label for="density">Density (kg/m³):</label>
+            <input type="number" id="density" min="0" step="1" required>
         </section>
         <section>
             <label for="thickness">Thickness (mm):</label>
@@ -146,6 +155,7 @@
         </section>
         <button onclick="calculateWeight()">Calculate</button>
         <div id="result"></div>
+        <p id="disclaimer"></p>
     </main>
     <footer>
         &copy; 2025 Panel Weight Calculator. Information without warranty, any liability is excluded.
@@ -164,7 +174,10 @@
                 {id: 'alder', density: 500},
                 {id: 'mdf', density: 750},
                 {id: 'particleboard', density: 700},
-                {id: 'corian', density: 1780}
+                {id: 'corian', density: 1780},
+                {id: 'three_layer_spruce', density: 450},
+                {id: 'beech_plywood', density: 700},
+                {id: 'birch_plywood', density: 700}
             ],
             metals: [
                 {id: 'aluminium', density: 2705},
@@ -176,7 +189,8 @@
             glasses: [
                 {id: 'float_glass', density: 2500},
                 {id: 'tempered_glass', density: 2500},
-                {id: 'laminated_glass', density: 2530}
+                {id: 'laminated_glass', density: 2530},
+                {id: 'plexiglass', density: 1190}
             ]
         };
 
@@ -187,11 +201,13 @@
                 welcome: 'Willkommen beim Platten-Gewichtsrechner für Schreiner. Berechnen Sie das Gewicht von Platten basierend auf Material, Dicke, Länge und Breite. Nur metrische Einheiten: mm für Maße, kg für Gewicht.',
                 category: 'Kategorie:',
                 material: 'Material:',
+                density: 'Dichte (kg/m³):',
                 thickness: 'Dicke (mm):',
                 length: 'Länge (mm):',
                 width: 'Breite (mm):',
                 calculate: 'Berechnen',
                 result: 'Gewicht: {weight} kg',
+                disclaimer: 'Dichteschwankungen können das kalkulierte Gewicht abweichen lassen. Rohdichte bei Bedarf bitte manuell anpassen.',
                 woods: 'Hölzer',
                 metals: 'Metalle',
                 glasses: 'Gläser',
@@ -208,6 +224,9 @@
                 mdf: 'MDF',
                 particleboard: 'Spanplatte',
                 corian: 'Corian',
+                three_layer_spruce: 'Dreischichtplatte aus Fichte',
+                beech_plywood: 'Sperrholz aus Buche',
+                birch_plywood: 'Sperrholz aus Birke',
                 aluminium: 'Aluminium',
                 steel: 'Stahl',
                 copper: 'Kupfer',
@@ -215,18 +234,21 @@
                 zinc: 'Zink',
                 float_glass: 'Floatglas',
                 tempered_glass: 'Gehärtetes Glas',
-                laminated_glass: 'Verbundglas'
+                laminated_glass: 'Verbundglas',
+                plexiglass: 'Plexiglas'
             },
             fr: {
                 title: 'Calculateur de poids de plaques',
                 welcome: 'Bienvenue sur le calculateur de poids de plaques pour menuisiers. Calculez le poids des plaques en fonction du matériau, de l\'épaisseur, de la longueur et de la largeur. Unités métriques uniquement : mm pour les mesures, kg pour le poids.',
                 category: 'Catégorie :',
                 material: 'Matériau :',
+                density: 'Densité (kg/m³) :',
                 thickness: 'Épaisseur (mm) :',
                 length: 'Longueur (mm) :',
                 width: 'Largeur (mm) :',
                 calculate: 'Calculer',
                 result: 'Poids : {weight} kg',
+                disclaimer: 'Les variations de densité peuvent faire dévier le poids calculé. Veuillez ajuster la densité brute manuellement si nécessaire.',
                 woods: 'Bois',
                 metals: 'Métaux',
                 glasses: 'Verres',
@@ -243,6 +265,9 @@
                 mdf: 'MDF',
                 particleboard: 'Panneau de particules',
                 corian: 'Corian',
+                three_layer_spruce: 'Panneau trois couches en épicéa',
+                beech_plywood: 'Contreplaqué en hêtre',
+                birch_plywood: 'Contreplaqué en bouleau',
                 aluminium: 'Aluminium',
                 steel: 'Acier',
                 copper: 'Cuivre',
@@ -250,18 +275,21 @@
                 zinc: 'Zinc',
                 float_glass: 'Verre float',
                 tempered_glass: 'Verre trempé',
-                laminated_glass: 'Verre feuilleté'
+                laminated_glass: 'Verre feuilleté',
+                plexiglass: 'Plexiglas'
             },
             en: {
                 title: 'Panel Weight Calculator',
                 welcome: 'Welcome to the Panel Weight Calculator for carpenters. Calculate the weight of panels based on material, thickness, length, and width. Metric units (mm, kg) by default; imperial (inches, lbs) available.',
                 category: 'Category:',
                 material: 'Material:',
+                density: 'Density (kg/m³):',
                 thickness: 'Thickness (mm):',
                 length: 'Length (mm):',
                 width: 'Width (mm):',
                 calculate: 'Calculate',
                 result: 'Weight: {weight} {unit}',
+                disclaimer: 'Density variations may cause the calculated weight to deviate. Please adjust the raw density manually if necessary.',
                 woods: 'Woods',
                 metals: 'Metals',
                 glasses: 'Glasses',
@@ -279,6 +307,9 @@
                 mdf: 'MDF',
                 particleboard: 'Particleboard',
                 corian: 'Corian',
+                three_layer_spruce: 'Three-layer Spruce Panel',
+                beech_plywood: 'Beech Plywood',
+                birch_plywood: 'Birch Plywood',
                 aluminium: 'Aluminium',
                 steel: 'Steel',
                 copper: 'Copper',
@@ -286,18 +317,21 @@
                 zinc: 'Zinc',
                 float_glass: 'Float Glass',
                 tempered_glass: 'Tempered Glass',
-                laminated_glass: 'Laminated Glass'
+                laminated_glass: 'Laminated Glass',
+                plexiglass: 'Plexiglass'
             },
             it: {
                 title: 'Calcolatore del Peso dei Pannelli',
                 welcome: 'Benvenuti nel Calcolatore del Peso dei Pannelli per falegnami. Calcola il peso dei pannelli in base al materiale, spessore, lunghezza e larghezza. Solo unità metriche: mm per le dimensioni, kg per il peso.',
                 category: 'Categoria:',
                 material: 'Materiale:',
+                density: 'Densità (kg/m³):',
                 thickness: 'Spessore (mm):',
                 length: 'Lunghezza (mm):',
                 width: 'Larghezza (mm):',
                 calculate: 'Calcola',
                 result: 'Peso: {weight} kg',
+                disclaimer: 'Le variazioni di densità possono far deviare il peso calcolato. Si prega di regolare manualmente la densità grezza se necessario.',
                 woods: 'Legni',
                 metals: 'Metalli',
                 glasses: 'Vetri',
@@ -314,6 +348,9 @@
                 mdf: 'MDF',
                 particleboard: 'Truciolare',
                 corian: 'Corian',
+                three_layer_spruce: 'Pannello a tre strati di abete',
+                beech_plywood: 'Compensato di faggio',
+                birch_plywood: 'Compensato di betulla',
                 aluminium: 'Alluminio',
                 steel: 'Acciaio',
                 copper: 'Rame',
@@ -321,7 +358,8 @@
                 zinc: 'Zinco',
                 float_glass: 'Vetro float',
                 tempered_glass: 'Vetro temperato',
-                laminated_glass: 'Vetro laminato'
+                laminated_glass: 'Vetro laminato',
+                plexiglass: 'Plexiglas'
             }
         };
 
@@ -337,9 +375,19 @@
                 const option = document.createElement('option');
                 option.value = mat.density;
                 option.textContent = translations[currentLang][mat.id];
-                option.dataset.id = mat.id; // Store id for reference if needed
+                option.dataset.id = mat.id;
+                option.dataset.density = mat.density;
                 materialSelect.appendChild(option);
             });
+            updateDensity();
+        }
+
+        function updateDensity() {
+            const materialSelect = document.getElementById('material');
+            const selectedOption = materialSelect.options[materialSelect.selectedIndex];
+            if (selectedOption) {
+                document.getElementById('density').value = selectedOption.dataset.density;
+            }
         }
 
         function updateUnits() {
@@ -351,7 +399,7 @@
         }
 
         function calculateWeight() {
-            const density = parseFloat(document.getElementById('material').value);
+            const density = parseFloat(document.getElementById('density').value);
             const thickness = parseFloat(document.getElementById('thickness').value);
             const length = parseFloat(document.getElementById('length').value);
             const width = parseFloat(document.getElementById('width').value);
@@ -374,6 +422,7 @@
             }
             const resultText = translations[currentLang].result.replace('{weight}', weight.toFixed(2)).replace('{unit}', weightUnit);
             document.getElementById('result').textContent = resultText;
+            document.getElementById('disclaimer').textContent = translations[currentLang].disclaimer;
         }
 
         function changeLanguage(lang) {
@@ -384,11 +433,13 @@
             document.querySelector('main p').textContent = translations[lang].welcome;
             document.querySelector('label[for="category"]').textContent = translations[lang].category;
             document.querySelector('label[for="material"]').textContent = translations[lang].material;
+            document.querySelector('label[for="density"]').textContent = translations[lang].density;
             document.querySelector('label[for="thickness"]').textContent = translations[lang].thickness;
             document.querySelector('label[for="length"]').textContent = translations[lang].length;
             document.querySelector('label[for="width"]').textContent = translations[lang].width;
             document.querySelector('button[onclick="calculateWeight()"]').textContent = translations[lang].calculate;
             document.querySelector('footer').innerHTML = translations[lang].footer;
+            document.getElementById('disclaimer').textContent = translations[lang].disclaimer;
 
             // Update category options
             const categorySelect = document.getElementById('category');
